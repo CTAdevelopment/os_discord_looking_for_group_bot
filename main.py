@@ -1,5 +1,4 @@
 #!/usr/bin/python3.10
-#/home/koit/.virtualenvs/discordenv/bin/python /home/koit/dbe_discord/main_bot.py
 import gc
 import os, re, sys
 from unicodedata import category
