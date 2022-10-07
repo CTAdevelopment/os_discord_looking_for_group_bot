@@ -220,30 +220,38 @@ async def _zoek(ctx, game: str, spelers: int, limiet_spelers: int):
             if server_TextChannel_toSearchPlay_name in txt_channel.name:
 
                 try:
+
+                    str_for_msg = f'Gamers, <@{ctx.user.id}> is looking for <{spelers}/{limiet_spelers}> {txt_count} for {game}.\nBe fast and join @{channelObj.jump_url}'
+
                     # send msg in text channel of current <guild>
                     msg = await txt_channel.send(
-                        f'Gamers, <@{ctx.user.id}> is looking for <{spelers}/{limiet_spelers}> {txt_count} for {game}.\nBe fast and join @{channelObj.jump_url}'
+                        str_for_msg
                     )
 
                     if bot.openGroupRequests.get(channelObj.id) == None:
                         bot.openGroupRequests[channelObj.id] = {
                             'owner' : '',
                             'game' : '',
-                            'messages' : None
+                            'messages' : None,
+                            'threads' : None
                         }
                         bot.openGroupRequests[channelObj.id]['owner'] = ctx.user
                         bot.openGroupRequests[channelObj.id]['game'] = game
                         bot.openGroupRequests[channelObj.id]['messages'] = [msg]
+                        bot.openGroupRequests[channelObj.id]['threads'] = [msg]
                     else:
                         bot.openGroupRequests[channelObj.id]['messages'].append(msg)
+
                 except Exception as e:
                     print(f'Not having the right access to send a msg in the server {g.name}\n')
-                    await bot.idea_master.send(content=f'Bot has not the right access to {g.name}')
+                    await bot.idea_master.send(content=f'Bot has not the right access to {g.name} with exp: {e}')
 
 
             else:
                 continue
 
+    print(bot)
+                    
 @bot.event
 async def on_voice_state_update(member, before, after):
     """ 
@@ -286,10 +294,13 @@ async def on_guild_channel_delete(channel) -> None:
     removes any temporary voiceChannels or openGroupRequests from the bot(Class)
     """
 
-    #clean TMP voice Channels & Clean the OpenGroupRequests
+    #clean TMP voice Channels, VoiceChannels & Clean the OpenGroupRequests
     if channel.id in bot.voiceChannels.keys():
         bot.voiceChannels.pop(channel.id)
-    
+
+    if channel.id in bot.tempChannels.keys():
+        bot.tempChannels.pop(channel.id)
+
     if channel.id in bot.openGroupRequests.keys():
         for msg in bot.openGroupRequests[channel.id]['messages']:
             await msg.delete()
